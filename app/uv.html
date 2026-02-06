@@ -428,7 +428,7 @@
             bTabs.splice(tIndex, 1)
 
             const tEl = document.querySelector(`.tab[data-tab-id="${tId}"]`)
-            const frame = document.querySelector(`.viewframe[data-view-id="${tId}"]`)
+            const frame = document.querySelector(`.viewframe[data-frame-id="${tId}"]`)
 
             if (tEl) tEl.remove()
             if (frame) frame.remove()
@@ -455,13 +455,17 @@
 
             let url = i.trim()
 
-            if (!url.includes(".") || url.includes(" ")) {
+            // FIXED: Better logic to detect URLs vs search queries
+            const hasProtocol = url.startsWith("http://") || url.startsWith("https://")
+            const looksLikeUrl = url.includes(".") && !url.includes(" ")
+            
+            if (!hasProtocol && !looksLikeUrl) {
+                // It's a search query
                 const se = localStorage.getItem("nOS_searchEngine") || "https://search.brave.com/search?q="
                 url = se + encodeURIComponent(url)
-            } else {
-                if (!url.startsWith("http://") && !url.startsWith("https://")) {
-                    url = "https://" + url
-                }
+            } else if (!hasProtocol) {
+                // It's a domain without protocol
+                url = "https://" + url
             }
 
             const cTab = bTabs.find((t) => t.id === aTab)
@@ -545,6 +549,8 @@
 
         function f() {
             const cTab = bTabs.find((t) => t.id === aTab)
+            // FIXED: Added bounds checking to prevent accessing undefined history
+            if (!cTab || cTab.historyIndex >= cTab.history.length - 1) return;
 
             cTab.historyIndex++
             const u = cTab.history[cTab.historyIndex]
