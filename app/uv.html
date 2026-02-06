@@ -330,14 +330,15 @@
     <script>
         let tabFrame
 
-        // FIXED: Initialize BARE connection with multiple fallback servers
+                let tabFrame
+
+        // FIXED: Initialize BARE connection with your Railway server
         const connection = new BareMux.BareMuxConnection("/baremux/worker.js")
         
-        // Multiple WISP/BARE servers with fallback options
+        // Your Railway BARE server URL
         const transports = [
-            { websocket: "wss://wisp.walk.money/" },
-            { websocket: "wss://wisp.dax.rocks/" },
-            { websocket: "wss://bare.works/v1/" }
+            { websocket: "wss://bare-server-production-adb5.up.railway.app/bare/" },
+            { http: "https://bare-server-production-adb5.up.railway.app/bare/" }
         ]
 
         // Initialize the transport with proper error handling
@@ -355,7 +356,7 @@
 
         // Initialize on load
         window.addEventListener("load", initializeTransport)
-
+        
         const tabCont = document.querySelector(".tabs")
 
         let bTabs = [
