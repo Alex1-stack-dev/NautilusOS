@@ -330,12 +330,31 @@
     <script>
         let tabFrame
 
-        // actual uv handling
+        // FIXED: Initialize BARE connection with multiple fallback servers
         const connection = new BareMux.BareMuxConnection("/baremux/worker.js")
-        const wispUrl = "wss://wisp.walk.money/" // rhw wisp, super speedy
-        const bareUrl = "https://useclassplay.vercel.app/fq/" // old site i have
+        
+        // Multiple WISP/BARE servers with fallback options
+        const transports = [
+            { websocket: "wss://wisp.walk.money/" },
+            { websocket: "wss://wisp.dax.rocks/" },
+            { websocket: "wss://bare.works/v1/" }
+        ]
 
-        connection.setTransport("/libcurl/index.mjs", [{ websocket: wispUrl }])
+        // Initialize the transport with proper error handling
+        function initializeTransport() {
+            connection.setTransport("/libcurl/index.mjs", transports)
+                .then(() => {
+                    console.log("✓ BARE transport initialized successfully")
+                })
+                .catch(err => {
+                    console.error("✗ Failed to initialize BARE transport:", err)
+                    // Try again after 3 seconds
+                    setTimeout(initializeTransport, 3000)
+                })
+        }
+
+        // Initialize on load
+        window.addEventListener("load", initializeTransport)
 
         const tabCont = document.querySelector(".tabs")
 
@@ -493,7 +512,8 @@
         async function go(u) {
 
             if (!await connection.getTransport()) {
-                connection.setTransport("/libcurl/index.mjs", [{ websocket: wispUrl }])
+                console.log("⚠ No transport available, reinitializing...")
+                initializeTransport()
             }
 
             console.log("a")
